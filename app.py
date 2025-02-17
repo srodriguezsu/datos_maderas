@@ -58,8 +58,10 @@ def plot_heatmap(df):
             return
 
         # Agrupar los datos por departamento y sumar el volumen
-        df_volume = df.groupby('dpto')['volumen_m3'].sum().reset_index()
-        df_volume['dpto'] = df['dpto'].str.upper() 
+        df_volume = df.groupby('dpto', as_index=False)['volumen_m3'].sum()
+        
+        # Convertir los nombres de los departamentos a mayúsculas
+        df_volume['dpto'] = df_volume['dpto'].str.upper()
         st.write(df_volume)
 
         # Unir los datos de volumen con el GeoDataFrame de Colombia
