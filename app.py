@@ -81,7 +81,7 @@ def plot_top_municipalities(df):
         if not all(col in df.columns for col in required_columns):
             st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
             return
-
+        st.write(df)
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
 
