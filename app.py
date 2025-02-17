@@ -8,6 +8,10 @@ from scipy import stats
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import StandardScaler
+import geopandas as gpd
+
+# Cargar el archivo GeoJSON de Colombia
+colombia = gpd.read_file("colombia.geojson")
 
 # Configuración de la página
 st.set_page_config(page_title="Análisis de Datos de Madera en Colombia", layout="wide")
