@@ -95,7 +95,7 @@ def plot_top_municipalities(df):
         if municipios_volume.empty:
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
-
+        st.write(municipios_volume)
         # Crear el mapa de los 10 municipios con mayor volumen
         fig, ax = plt.subplots(figsize=(10, 8))
         municipios_volume.plot(ax=ax, color='lightgray')  # Fondo de todos los municipios
