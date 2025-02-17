@@ -139,9 +139,39 @@ def group_by_municipality(df):
     return municipality_volume
 
 # Función para identificar especies con menor volumen movilizado
-def least_common_species(df):
-    least_common = df['especie'].value_counts().nsmallest(10)
-    return least_common
+import streamlit as st
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+def least_common_species_map(df):
+    try:
+        # Identificar las 10 especies menos comunes
+        least_common_species = df['especie'].value_counts().nsmallest(10).index
+
+        # Filtrar el DataFrame para quedarse solo con las especies menos comunes
+        df_filtered = df[df['especie'].isin(least_common_species)]
+
+        # Crear una tabla pivote: filas = municipio, columnas = especie, valores = cuenta de ocurrencias
+        df_pivot = pd.pivot_table(df_filtered, values='volumen_m3', index='municipio', 
+                                  columns='especie', aggfunc='count', fill_value=0)
+
+        # Cargar el archivo GeoJSON de municipios de Colombia
+        url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
+        municipios = gpd.read_file(url_municipios)
+        municipios['MPIO_CNMBR'] = municipios['MPIO_CNMBR'].str.upper()
+
+        # Unir los datos de especies menos comunes con el GeoDataFrame de municipios
+        municipios_species = municipios.merge(df_pivot, how='left', left_on='MPIO_CNMBR', right_index=True)
+
+        # Graficar un solo mapa con múltiples capas para las especies menos comunes
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        municipios_species.plot(cmap='gray', ax=ax, color='lightgray', edgecolor='black')  # Mapa base
+
+        # Añadir capas de colores por especie menos común
+        municipios_species[least_common_species].plot(ax=ax, legend=True, cmap='viridis')
+
 
 # Función para comparar la distribución de especies entre departamentos
 def compare_species_distribution(df):
@@ -242,6 +272,7 @@ def main():
         st.header("Especies de Madera con Menor Volumen Movilizado")
         least_common = least_common_species(df)
         st.write(least_common)
+        least_common_species_map(df)
 
         st.header("Comparación de Distribución de Especies entre Departamentos")
         compare_species_distribution(df)
