@@ -45,13 +45,29 @@ def plot_bar_chart(data):
     ax.set_ylabel('Volumen Movilizado')
     st.pyplot(fig)
 
-# Función para generar un mapa de calor
 def plot_heatmap(df):
-    heatmap_data = df.pivot_table(index='dpto', columns='especie', values='volumen_m3', aggfunc='sum')
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(heatmap_data, cmap='viridis', ax=ax)
-    ax.set_title('Distribución de Volúmenes de Madera por Departamento')
-    st.pyplot(fig)
+    try:
+        # Verificar que las columnas necesarias estén presentes
+        required_columns = ['dpto', 'volumen_m3']
+        if not all(col in df.columns for col in required_columns):
+            st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
+            return
+
+        # Agrupar los datos por departamento y sumar el volumen
+        df_volume = df.groupby('dpto')['volumen_m3'].sum().reset_index()
+
+        # Unir los datos de volumen con el GeoDataFrame de Colombia
+        colombia_volume = colombia.merge(df_volume, how='left', left_on='NOMBRE_DPT', right_on='dpto')
+
+        # Crear el mapa de calor
+        fig, ax = plt.subplots(figsize=(10, 8))
+        colombia_volume.plot(column='volumen_m3', cmap='OrRd', legend=True, ax=ax,
+                             missing_kwds={"color": "lightgray", "label": "Sin datos"})
+        ax.set_title('Distribución de Volúmenes de Madera por Departamento')
+        ax.set_axis_off()
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error al generar el mapa de calor: {e}")
 
 # Función para visualizar en un mapa los municipios con mayor movilización de madera
 def plot_top_municipalities(df):
