@@ -47,7 +47,7 @@ def plot_bar_chart(data):
 
 # Función para generar un mapa de calor
 def plot_heatmap(df):
-    heatmap_data = df.pivot_table(index='departamento', columns='especie', values='volumen', aggfunc='sum')
+    heatmap_data = df.pivot_table(index='dpto', columns='especie', values='volumen', aggfunc='sum')
     fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(heatmap_data, cmap='viridis', ax=ax)
     ax.set_title('Distribución de Volúmenes de Madera por Departamento')
