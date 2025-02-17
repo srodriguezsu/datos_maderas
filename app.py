@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 import geopandas as gpd
 
 # Cargar el archivo GeoJSON de Colombia
-colombia = gpd.read_file("colombia.geojson")
+colombia = gpd.read_file("https://gist.githubusercontent.com/john-guerra/43c7656821069d00dcbc/raw/3aadedf47badbdac823b00dbe259f6bc6d9e1899/colombia.geo.json")
 
 # Configuración de la página
 st.set_page_config(page_title="Análisis de Datos de Madera en Colombia", layout="wide")
