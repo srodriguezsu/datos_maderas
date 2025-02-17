@@ -127,7 +127,7 @@ def least_common_species(df):
 
 # Función para comparar la distribución de especies entre departamentos
 def compare_species_distribution(df):
-    species_distribution = df.groupby(['departamento', 'especie'])['volumen_m3'].sum().unstack()
+    species_distribution = df.groupby(['dpto', 'especie'])['volumen_m3'].sum().unstack()
     fig, ax = plt.subplots(figsize=(12, 8))
     species_distribution.plot(kind='bar', stacked=True, ax=ax)
     ax.set_title('Distribución de Especies de Madera por Departamento')
