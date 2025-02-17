@@ -138,11 +138,6 @@ def group_by_municipality(df):
     municipality_volume = df.groupby('municipio')['volumen_m3'].sum().reset_index()
     return municipality_volume
 
-# Función para identificar especies con menor volumen movilizado
-import streamlit as st
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
 
 def least_common_species_map(df):
     try:
@@ -164,13 +159,19 @@ def least_common_species_map(df):
         # Unir los datos de especies menos comunes con el GeoDataFrame de municipios
         municipios_species = municipios.merge(df_pivot, how='left', left_on='MPIO_CNMBR', right_index=True)
 
-        # Graficar un solo mapa con múltiples capas para las especies menos comunes
-        fig, ax = plt.subplots(figsize=(12, 10))
+        # Graficar todas las especies menos comunes en un solo mapa con diferentes leyendas
+        fig, axes = plt.subplots(5, 2, figsize=(15, 20))  # Crear una cuadrícula de mapas
 
-        municipios_species.plot(cmap='gray', ax=ax, color='lightgray', edgecolor='black')  # Mapa base
+        for ax, especie in zip(axes.flatten(), least_common_species):
+            municipios_species.plot(column=especie, cmap='viridis', legend=True, ax=ax,
+                                    missing_kwds={"color": "lightgray", "label": "Sin datos"})
+            ax.set_title(f'Distribución de {especie}')
+            ax.set_axis_off()
 
-        # Añadir capas de colores por especie menos común
-        municipios_species[least_common_species].plot(ax=ax, legend=True, cmap='viridis')
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error(f"Error al graficar las especies menos comunes: {e}")
 
 
 # Función para comparar la distribución de especies entre departamentos
@@ -270,7 +271,7 @@ def main():
         st.write(municipality_volume)
 
         st.header("Especies de Madera con Menor Volumen Movilizado")
-        least_common = least_common_species(df)
+        
         st.write(least_common)
         least_common_species_map(df)
 
