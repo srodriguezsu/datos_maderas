@@ -62,7 +62,7 @@ def plot_heatmap(df):
         
         # Convertir los nombres de los departamentos a mayúsculas
         df_volume['dpto'] = df_volume['dpto'].str.upper()
-        st.write(df_volume)
+        
 
         # Unir los datos de volumen con el GeoDataFrame de Colombia
         colombia_volume = colombia.merge(df_volume, how='left', left_on='NOMBRE_DPT', right_on='dpto')
@@ -87,7 +87,7 @@ def plot_top_municipalities(df):
 
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
-        st.write(df_volume)    
+        
         df_volume['municipio'] = df['municipio'].str.upper() 
         # Cargar el archivo GeoJSON de municipios de Colombia
         url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
@@ -163,7 +163,8 @@ def apply_clustering(df):
 
         df['volumen_m3'] = pd.to_numeric(df['volumen_m3'])
         # Agrupar los datos por municipio y sumar el volumen
-        df_volume = df.groupby('municipio')['volumen_m3'].sum().reset_index()
+        df_volume = df.groupby('municipio', as_index=False)['volumen_m3'].sum()
+        df_volume['dpto'] = df_volume['dpto'].str.upper()
 
         # Cargar el archivo GeoJSON de municipios de Colombia
         url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
