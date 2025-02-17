@@ -153,8 +153,18 @@ def apply_clustering(df):
         # Unir los datos de volumen con el GeoDataFrame de municipios
         municipios_volume = municipios.merge(df_volume, how='left', left_on='MPIO_CNMBR', right_on='municipio')
 
-        # Eliminar filas con valores faltantes en 'volumen_m3'
-        municipios_volume = municipios_volume.dropna(subset=['volumen_m3'])
+        # Verificar si hay datos después de la unión
+        if municipios_volume.empty:
+            st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
+            return
+
+        # Rellenar valores faltantes en 'volumen_m3' con 0
+        municipios_volume['volumen_m3'] = municipios_volume['volumen_m3'].fillna(0)
+
+        # Verificar que haya datos para escalar
+        if municipios_volume['volumen_m3'].sum() == 0:
+            st.error("No hay datos de volumen para aplicar clustering.")
+            return
 
         # Escalar los datos para el clustering
         scaler = StandardScaler()
@@ -173,7 +183,6 @@ def apply_clustering(df):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error al aplicar clustering: {e}")
-            
 
 # Función para calcular el índice de diversidad de Shannon
 def shannon_diversity_index(df):
