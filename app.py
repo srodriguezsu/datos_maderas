@@ -97,8 +97,9 @@ def plot_top_municipalities(df):
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
 
-        # Rellenar valores faltantes en 'volumen_m3' con 0
-        municipios_volume['volumen_m3'] = municipios_volume['volumen_m3'].fillna(0)
+        # Convertir la columna 'volumen_m3' a numérico
+        municipios_volume['volumen_m3'] = pd.to_numeric(municipios_volume['volumen_m3'], errors='coerce')
+
 
         # Verificar que haya datos para graficar
         if municipios_volume['volumen_m3'].sum() == 0:
