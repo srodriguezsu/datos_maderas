@@ -143,6 +143,7 @@ def apply_clustering(df):
             st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
             return
 
+        df['volumen_m3'] = pd.to_numeric(df['volumen_m3'])
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio')['volumen_m3'].sum().reset_index()
 
@@ -158,13 +159,8 @@ def apply_clustering(df):
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
 
-        df['volumen_m3'] = pd.to_numeric(df['volumen_m3'])
 
-        # Verificar que haya datos para escalar
-        if municipios_volume['volumen_m3'].sum() == 0:
-            st.error("No hay datos de volumen para aplicar clustering.")
-            return
-
+        
         # Escalar los datos para el clustering
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(municipios_volume[['volumen_m3']])
