@@ -83,7 +83,7 @@ def plot_top_municipalities(df):
             return
 
         # Agrupar los datos por municipio y sumar el volumen
-        df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+        df_volume = df.copy().groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
 
         # Unir los datos de volumen con el GeoDataFrame de municipios
         municipios = gpd.read_file("https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json")  # Asegúrate de tener este archivo
