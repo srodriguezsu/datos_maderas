@@ -83,7 +83,8 @@ def plot_top_municipalities(df):
 
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
-        st.write(df_volume)
+        st.write(df_volume)    
+        df['municipio'] = df['municipio'].str.upper() 
         # Cargar el archivo GeoJSON de municipios de Colombia
         url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
         municipios = gpd.read_file(url_municipios)
