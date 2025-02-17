@@ -135,29 +135,39 @@ def compare_species_distribution(df):
     ax.set_ylabel('Volumen Movilizado')
     st.pyplot(fig)
 
-# Función para aplicar clustering y mostrar clusters en un mapa
 def apply_clustering(df):
     try:
         # Verificar que las columnas necesarias estén presentes
-        required_columns = ['latitud', 'longitud', 'volumen_m3']
+        required_columns = ['municipio', 'volumen_m3']
         if not all(col in df.columns for col in required_columns):
             st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
             return
 
-        # Escalar los datos
+        # Agrupar los datos por municipio y sumar el volumen
+        df_volume = df.groupby('municipio')['volumen_m3'].sum().reset_index()
+
+        # Cargar el archivo GeoJSON de municipios de Colombia
+        url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
+        municipios = gpd.read_file(url_municipios)
+
+        # Unir los datos de volumen con el GeoDataFrame de municipios
+        municipios_volume = municipios.merge(df_volume, how='left', left_on='MPIO_CNMBR', right_on='municipio')
+
+        # Eliminar filas con valores faltantes en 'volumen_m3'
+        municipios_volume = municipios_volume.dropna(subset=['volumen_m3'])
+
+        # Escalar los datos para el clustering
         scaler = StandardScaler()
-        scaled_data = scaler.fit_transform(df[['latitud', 'longitud', 'volumen_m3']])
+        scaled_data = scaler.fit_transform(municipios_volume[['volumen_m3']])
 
         # Aplicar KMeans clustering
-        kmeans = KMeans(n_clusters=3)
-        df['cluster'] = kmeans.fit_predict(scaled_data)
-
-        # Convertir el DataFrame a GeoDataFrame
-        gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitud, df.latitud))
+        kmeans = KMeans(n_clusters=3)  # Puedes ajustar el número de clusters
+        municipios_volume['cluster'] = kmeans.fit_predict(scaled_data)
 
         # Crear el mapa de clusters
         fig, ax = plt.subplots(figsize=(10, 8))
-        gdf.plot(column='cluster', cmap='viridis', legend=True, ax=ax, markersize=50)
+        municipios_volume.plot(column='cluster', cmap='viridis', legend=True, ax=ax,
+                               missing_kwds={"color": "lightgray", "label": "Sin datos"})
         ax.set_title('Clustering de Municipios por Volumen de Madera')
         ax.set_axis_off()
         st.pyplot(fig)
