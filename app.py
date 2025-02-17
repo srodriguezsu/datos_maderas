@@ -271,8 +271,6 @@ def main():
         st.write(municipality_volume)
 
         st.header("Especies de Madera con Menor Volumen Movilizado")
-        
-        st.write(least_common)
         least_common_species_map(df)
 
         st.header("Comparación de Distribución de Especies entre Departamentos")
