@@ -97,14 +97,6 @@ def plot_top_municipalities(df):
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
 
-        # Convertir la columna 'volumen_m3' a numérico
-        municipios_volume['volumen_m3'] = pd.to_numeric(municipios_volume['volumen_m3'], errors='coerce')
-
-
-        # Verificar que haya datos para graficar
-        if municipios_volume['volumen_m3'].sum() == 0:
-            st.error("No hay datos de volumen para graficar.")
-            return
 
         # Crear el mapa de los 10 municipios con mayor volumen
         fig, ax = plt.subplots(figsize=(10, 8))
