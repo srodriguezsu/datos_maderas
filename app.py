@@ -55,34 +55,10 @@ def plot_heatmap(df):
 
 # Función para visualizar en un mapa los municipios con mayor movilización de madera
 def plot_top_municipalities(df):
-    try:
-        # Verifica que las columnas necesarias estén presentes
-        required_columns = ['municipio', 'volumen_m3']
-        if not all(col in df.columns for col in required_columns):
-            st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
-            return
+    top_municipalities = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+    fig = px.scatter_geo(top_municipalities, lat='latitud', lon='longitud', size='volumen_m3', hover_name='municipio', scope='south america')
+    st.plotly_chart(fig)
 
-        # Agrupa por municipio y suma el volumen movilizado
-        top_municipalities = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
-
-        # Si no hay coordenadas, muestra un mensaje de error
-        if 'latitud' not in df.columns or 'longitud' not in df.columns:
-            st.error("El DataFrame no contiene las columnas 'latitud' y 'longitud'. No se puede generar el mapa.")
-            return
-
-        # Crea el mapa
-        fig = px.scatter_geo(
-            top_municipalities,
-            lat='latitud',
-            lon='longitud',
-            size='volumen_m3',
-            hover_name='municipio',
-            scope='south america',
-            title='Top 10 Municipios con Mayor Movilización de Madera'
-        )
-        st.plotly_chart(fig)
-    except Exception as e:
-        st.error(f"Error al generar el mapa de municipios: {e}")
 
 # Función para analizar la evolución temporal del volumen de madera
 def plot_temporal_evolution(df):
