@@ -164,7 +164,7 @@ def apply_clustering(df):
         df['volumen_m3'] = pd.to_numeric(df['volumen_m3'])
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio', as_index=False)['volumen_m3'].sum()
-        df_volume['dpto'] = df_volume['dpto'].str.upper()
+        df_volume['municipio'] = df_volume['municipio'].str.upper()
 
         # Cargar el archivo GeoJSON de municipios de Colombia
         url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
