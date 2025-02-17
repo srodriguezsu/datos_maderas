@@ -161,10 +161,13 @@ def apply_clustering(df):
             st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
             return
 
-        df['volumen_m3'] = pd.to_numeric(df['volumen_m3'])
         # Agrupar los datos por municipio y sumar el volumen
         df_volume = df.groupby('municipio', as_index=False)['volumen_m3'].sum()
+        df_volume['volumen_m3'] = pd.to_numeric(df_volume['volumen_m3'], errors='coerce')
         df_volume['municipio'] = df_volume['municipio'].str.upper()
+
+        # Reemplazar valores NaN por 0 en la columna de volumen
+        df_volume['volumen_m3'].fillna(0, inplace=True)
 
         # Cargar el archivo GeoJSON de municipios de Colombia
         url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
@@ -173,19 +176,15 @@ def apply_clustering(df):
         # Unir los datos de volumen con el GeoDataFrame de municipios
         municipios_volume = municipios.merge(df_volume, how='left', left_on='MPIO_CNMBR', right_on='municipio')
 
-        # Verificar si hay datos después de la unión
-        if municipios_volume.empty:
-            st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
-            return
+        # Reemplazar valores NaN en el volumen resultante de la unión
+        municipios_volume['volumen_m3'].fillna(0, inplace=True)
 
-
-        
         # Escalar los datos para el clustering
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(municipios_volume[['volumen_m3']])
 
         # Aplicar KMeans clustering
-        kmeans = KMeans(n_clusters=3)  # Puedes ajustar el número de clusters
+        kmeans = KMeans(n_clusters=3, random_state=42)  # Puedes ajustar el número de clusters
         municipios_volume['cluster'] = kmeans.fit_predict(scaled_data)
 
         # Crear el mapa de clusters
@@ -197,6 +196,7 @@ def apply_clustering(df):
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error al aplicar clustering: {e}")
+
 
 # Función para calcular el índice de diversidad de Shannon
 def shannon_diversity_index(df):
