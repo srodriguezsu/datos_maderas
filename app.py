@@ -55,14 +55,14 @@ def plot_heatmap(df):
 
 # Función para visualizar en un mapa los municipios con mayor movilización de madera
 def plot_top_municipalities(df):
-    top_municipalities = df.groupby('municipio')['volumen'].sum().nlargest(10).reset_index()
-    fig = px.scatter_geo(top_municipalities, lat='latitud', lon='longitud', size='volumen', hover_name='municipio', scope='south america')
+    top_municipalities = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+    fig = px.scatter_geo(top_municipalities, lat='latitud', lon='longitud', size='volumen_m3', hover_name='municipio', scope='south america')
     st.plotly_chart(fig)
 
 # Función para analizar la evolución temporal del volumen de madera
 def plot_temporal_evolution(df):
     df['fecha'] = pd.to_datetime(df['fecha'])
-    temporal_evolution = df.groupby([df['fecha'].dt.year, 'especie'])['volumen'].sum().unstack()
+    temporal_evolution = df.groupby([df['fecha'].dt.year, 'especie'])['volumen_m3'].sum().unstack()
     fig, ax = plt.subplots()
     temporal_evolution.plot(ax=ax)
     ax.set_title('Evolución Temporal del Volumen de Madera por Especie')
@@ -72,13 +72,13 @@ def plot_temporal_evolution(df):
 
 # Función para identificar outliers
 def identify_outliers(df):
-    z_scores = np.abs(stats.zscore(df['volumen']))
+    z_scores = np.abs(stats.zscore(df['volumen_m3']))
     outliers = df[z_scores > 3]
     return outliers
 
 # Función para agrupar datos por municipio y calcular el volumen total
 def group_by_municipality(df):
-    municipality_volume = df.groupby('municipio')['volumen'].sum().reset_index()
+    municipality_volume = df.groupby('municipio')['volumen_m3'].sum().reset_index()
     return municipality_volume
 
 # Función para identificar especies con menor volumen movilizado
@@ -88,7 +88,7 @@ def least_common_species(df):
 
 # Función para comparar la distribución de especies entre departamentos
 def compare_species_distribution(df):
-    species_distribution = df.groupby(['departamento', 'especie'])['volumen'].sum().unstack()
+    species_distribution = df.groupby(['departamento', 'especie'])['volumen_m3'].sum().unstack()
     fig, ax = plt.subplots(figsize=(12, 8))
     species_distribution.plot(kind='bar', stacked=True, ax=ax)
     ax.set_title('Distribución de Especies de Madera por Departamento')
@@ -99,7 +99,7 @@ def compare_species_distribution(df):
 # Función para aplicar clustering y mostrar clusters en un mapa
 def apply_clustering(df):
     scaler = StandardScaler()
-    scaled_data = scaler.fit_transform(df[['latitud', 'longitud', 'volumen']])
+    scaled_data = scaler.fit_transform(df[['latitud', 'longitud', 'volumen_m3']])
     kmeans = KMeans(n_clusters=3)
     df['cluster'] = kmeans.fit_predict(scaled_data)
     fig = px.scatter_geo(df, lat='latitud', lon='longitud', color='cluster', scope='south america')
