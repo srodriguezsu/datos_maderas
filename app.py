@@ -159,20 +159,26 @@ def least_common_species_map(df):
         # Unir los datos de especies menos comunes con el GeoDataFrame de municipios
         municipios_species = municipios.merge(df_pivot, how='left', left_on='MPIO_CNMBR', right_index=True)
 
-        # Graficar todas las especies menos comunes en un solo mapa con diferentes leyendas
-        fig, axes = plt.subplots(5, 2, figsize=(15, 20))  # Crear una cuadrícula de mapas
+        # Crear una columna adicional con la suma de todas las especies menos comunes (para filtros en el mapa)
+        municipios_species['total_especies_menos_comunes'] = municipios_species[least_common_species].sum(axis=1)
 
-        for ax, especie in zip(axes.flatten(), least_common_species):
-            municipios_species.plot(column=especie, cmap='viridis', legend=True, ax=ax,
-                                    missing_kwds={"color": "lightgray", "label": "Sin datos"})
-            ax.set_title(f'Distribución de {especie}')
-            ax.set_axis_off()
+        # Graficar todos los municipios con un selector dinámico en Streamlit
+        selected_species = st.selectbox(
+            "Selecciona una especie para visualizar:",
+            options=least_common_species
+        )
+
+        # Crear el mapa para la especie seleccionada
+        fig, ax = plt.subplots(figsize=(12, 8))
+        municipios_species.plot(column=selected_species, cmap='viridis', legend=True, ax=ax,
+                                missing_kwds={"color": "lightgray", "label": "Sin datos"})
+        ax.set_title(f'Distribución de {selected_species}')
+        ax.set_axis_off()
 
         st.pyplot(fig)
 
     except Exception as e:
         st.error(f"Error al graficar las especies menos comunes: {e}")
-
 
 # Función para comparar la distribución de especies entre departamentos
 def compare_species_distribution(df):
