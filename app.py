@@ -73,7 +73,6 @@ def plot_heatmap(df):
     except Exception as e:
         st.error(f"Error al generar el mapa de calor: {e}")
 
-
 def plot_top_municipalities(df):
     try:
         # Verificar que las columnas necesarias estén presentes
@@ -97,17 +96,20 @@ def plot_top_municipalities(df):
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
 
-
         # Crear el mapa de los 10 municipios con mayor volumen
         fig, ax = plt.subplots(figsize=(10, 8))
         municipios_volume.plot(ax=ax, color='lightgray')  # Fondo de todos los municipios
-        municipios_volume.nlargest(10, 'volumen_m3').plot(column='volumen_m3', cmap='viridis', legend=True, ax=ax,
+
+        # Plotear los 10 municipios top con color rojo
+        municipios_volume.nlargest(10, 'volumen_m3').plot(column='volumen_m3', cmap='Reds', legend=True, ax=ax,
                                                           markersize=100, label='Top 10 Municipios')
+
         ax.set_title('Top 10 Municipios con Mayor Movilización de Madera')
         ax.set_axis_off()
         st.pyplot(fig)
     except Exception as e:
         st.error(f"Error al generar el mapa de municipios: {e}")
+
 
 # Función para analizar la evolución temporal del volumen de madera
 def plot_temporal_evolution(df):
