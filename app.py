@@ -158,6 +158,7 @@ def apply_clustering(df):
             st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
             return
 
+        df['volumen_m3'] = pd.to_numeric(df['volumen_m3'], errors='coerce')  
         # Rellenar valores faltantes en 'volumen_m3' con 0
         municipios_volume['volumen_m3'] = municipios_volume['volumen_m3'].fillna(0)
 
