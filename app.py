@@ -146,6 +146,7 @@ def least_common_species_map(df):
 
         # Filtrar el DataFrame para quedarse solo con las especies menos comunes
         df_filtered = df[df['especie'].isin(least_common_species)]
+        df_filtered['municipio'] = df_filtered['municipio'].str.upper()
 
         # Crear una tabla pivote: filas = municipio, columnas = especie, valores = cuenta de ocurrencias
         df_pivot = pd.pivot_table(df_filtered, values='volumen_m3', index='municipio', 
