@@ -73,12 +73,31 @@ def plot_heatmap(df):
     except Exception as e:
         st.error(f"Error al generar el mapa de calor: {e}")
 
-# Función para visualizar en un mapa los municipios con mayor movilización de madera
-def plot_top_municipalities(df):
-    top_municipalities = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
-    fig = px.scatter_geo(top_municipalities, lat='latitud', lon='longitud', size='volumen_m3', hover_name='municipio', scope='south america')
-    st.plotly_chart(fig)
 
+def plot_top_municipalities(df):
+    try:
+        # Verificar que las columnas necesarias estén presentes
+        required_columns = ['municipio', 'volumen_m3']
+        if not all(col in df.columns for col in required_columns):
+            st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
+            return
+
+        # Agrupar los datos por municipio y sumar el volumen
+        df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+
+        # Unir los datos de volumen con el GeoDataFrame de municipios
+        municipios = gpd.read_file("municipios_colombia.geojson")  # Asegúrate de tener este archivo
+        municipios_volume = municipios.merge(df_volume, how='left', left_on='NOMBRE_MUN', right_on='municipio')
+
+        # Crear el mapa
+        fig, ax = plt.subplots(figsize=(10, 8))
+        municipios_volume.plot(ax=ax, color='lightgray')  # Fondo de todos los municipios
+        municipios_volume.dropna().plot(column='volumen_m3', cmap='viridis', legend=True, ax=ax)  # Municipios top
+        ax.set_title('Top 10 Municipios con Mayor Movilización de Madera')
+        ax.set_axis_off()
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error al generar el mapa de municipios: {e}")
 
 # Función para analizar la evolución temporal del volumen de madera
 def plot_temporal_evolution(df):
@@ -119,12 +138,33 @@ def compare_species_distribution(df):
 
 # Función para aplicar clustering y mostrar clusters en un mapa
 def apply_clustering(df):
-    scaler = StandardScaler()
-    scaled_data = scaler.fit_transform(df[['latitud', 'longitud', 'volumen_m3']])
-    kmeans = KMeans(n_clusters=3)
-    df['cluster'] = kmeans.fit_predict(scaled_data)
-    fig = px.scatter_geo(df, lat='latitud', lon='longitud', color='cluster', scope='south america')
-    st.plotly_chart(fig)
+    try:
+        # Verificar que las columnas necesarias estén presentes
+        required_columns = ['latitud', 'longitud', 'volumen_m3']
+        if not all(col in df.columns for col in required_columns):
+            st.error(f"El DataFrame no contiene las columnas necesarias: {required_columns}")
+            return
+
+        # Escalar los datos
+        scaler = StandardScaler()
+        scaled_data = scaler.fit_transform(df[['latitud', 'longitud', 'volumen_m3']])
+
+        # Aplicar KMeans clustering
+        kmeans = KMeans(n_clusters=3)
+        df['cluster'] = kmeans.fit_predict(scaled_data)
+
+        # Convertir el DataFrame a GeoDataFrame
+        gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitud, df.latitud))
+
+        # Crear el mapa de clusters
+        fig, ax = plt.subplots(figsize=(10, 8))
+        gdf.plot(column='cluster', cmap='viridis', legend=True, ax=ax, markersize=50)
+        ax.set_title('Clustering de Municipios por Volumen de Madera')
+        ax.set_axis_off()
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error al aplicar clustering: {e}")
+            
 
 # Función para calcular el índice de diversidad de Shannon
 def shannon_diversity_index(df):
