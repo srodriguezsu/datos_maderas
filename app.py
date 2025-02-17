@@ -101,8 +101,8 @@ def plot_top_municipalities(df):
 
 # Función para analizar la evolución temporal del volumen de madera
 def plot_temporal_evolution(df):
-    df['fecha'] = pd.to_datetime(df['fecha'])
-    temporal_evolution = df.groupby([df['fecha'].dt.year, 'especie'])['volumen_m3'].sum().unstack()
+    df['fecha'] = pd.to_datetime(df['semestre'])
+    temporal_evolution = df.groupby([df['semestre'], 'especie'])['volumen_m3'].sum().unstack()
     fig, ax = plt.subplots()
     temporal_evolution.plot(ax=ax)
     ax.set_title('Evolución Temporal del Volumen de Madera por Especie')
