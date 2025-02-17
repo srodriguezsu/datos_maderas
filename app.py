@@ -83,16 +83,33 @@ def plot_top_municipalities(df):
             return
 
         # Agrupar los datos por municipio y sumar el volumen
-        df_volume = df.copy().groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+        df_volume = df.groupby('municipio')['volumen_m3'].sum().nlargest(10).reset_index()
+
+        # Cargar el archivo GeoJSON de municipios de Colombia
+        url_municipios = "https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json"
+        municipios = gpd.read_file(url_municipios)
 
         # Unir los datos de volumen con el GeoDataFrame de municipios
-        municipios = gpd.read_file("https://raw.githubusercontent.com/macortesgu/MGN_2021_geojson/refs/heads/main/MGN2021_MPIO_web.geo.json")  # Asegúrate de tener este archivo
         municipios_volume = municipios.merge(df_volume, how='left', left_on='MPIO_CNMBR', right_on='municipio')
 
-        # Crear el mapa
+        # Verificar si hay datos después de la unión
+        if municipios_volume.empty:
+            st.error("No hay datos válidos después de la unión. Verifica los nombres de los municipios.")
+            return
+
+        # Rellenar valores faltantes en 'volumen_m3' con 0
+        municipios_volume['volumen_m3'] = municipios_volume['volumen_m3'].fillna(0)
+
+        # Verificar que haya datos para graficar
+        if municipios_volume['volumen_m3'].sum() == 0:
+            st.error("No hay datos de volumen para graficar.")
+            return
+
+        # Crear el mapa de los 10 municipios con mayor volumen
         fig, ax = plt.subplots(figsize=(10, 8))
         municipios_volume.plot(ax=ax, color='lightgray')  # Fondo de todos los municipios
-        municipios_volume.dropna().plot(column='volumen_m3', cmap='viridis', legend=True, ax=ax)  # Municipios top
+        municipios_volume.nlargest(10, 'volumen_m3').plot(column='volumen_m3', cmap='viridis', legend=True, ax=ax,
+                                                          markersize=100, label='Top 10 Municipios')
         ax.set_title('Top 10 Municipios con Mayor Movilización de Madera')
         ax.set_axis_off()
         st.pyplot(fig)
